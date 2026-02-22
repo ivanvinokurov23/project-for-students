@@ -1,0 +1,89 @@
+/* Новые стили для процентов */
+.result-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.percent-number {
+    font-size: 28px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.average-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.average-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    font-size: 20px;
+}
+
+.average-label {
+    color: #495057;
+    font-weight: 500;
+}
+
+.average-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* Анимация для карточек */
+.result-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* Стили для разных процентов */
+.result-card.high-score {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.result-card.medium-score {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+}
+
+.result-card.low-score {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 600px) {
+    .average-content {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .percent-number {
+        font-size: 24px;
+    }
+}

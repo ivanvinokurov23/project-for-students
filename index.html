@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход для учеников</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h1>📚 Дневник ученика</h1>
+            <p>Введи свои данные, чтобы увидеть результаты</p>
+            
+            <input type="text" id="login" placeholder="Логин" autocomplete="off">
+            <input type="password" id="password" placeholder="Пароль">
+            
+            <button onclick="login()">Войти</button>
+            
+            <div id="error" class="error"></div>
+            <div id="loading" class="loading" style="display: none;">Загрузка...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzNnRVxRMrw4Kdh5Tl17amyXxQUkkT4SKnriHoZoKAfPnulZjg7ngz6OE6W_3iAnhwraw/exec'; // Вставь сюда ссылку на твой веб-апп
+        
+        async function login() {
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            const button = document.querySelector('button');
+            
+            // Простая валидация
+            if (!login || !password) {
+                errorDiv.textContent = 'Заполни все поля!';
+                return;
+            }
+            
+            // Показываем загрузку
+            errorDiv.textContent = '';
+            loadingDiv.style.display = 'block';
+            button.disabled = true;
+            
+            try {
+                // Отправляем запрос к Google Sheets
+                const response = await fetch(`${API_URL}?login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Сохраняем данные и переходим на страницу с результатами
+                    sessionStorage.setItem('userName', data.name);
+                    sessionStorage.setItem('userResults', JSON.stringify(data.results));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorDiv.textContent = data.error || 'Ошибка входа';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Ошибка соединения. Попробуй позже.';
+                console.error(error);
+            } finally {
+                // Убираем загрузку
+                loadingDiv.style.display = 'none';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

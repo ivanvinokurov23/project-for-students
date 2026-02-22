@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои результаты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-box">
+            <div class="header">
+                <h1>Привет, <span id="student-name"></span>! 👋</h1>
+                <button onclick="logout()" class="logout-btn">Выйти</button>
+            </div>
+            
+            <h2>Твои результаты:</h2>
+            
+            <!-- Добавляем средний балл -->
+            <div id="average" class="average-card">
+                <!-- Сюда подставится средний процент -->
+            </div>
+            
+            <div id="results" class="results">
+                <!-- Сюда подставятся результаты -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getColorForPercentage(percent) {
+            if (percent >= 80) return '#2ecc71'; // зеленый
+            if (percent >= 60) return '#f39c12'; // оранжевый
+            return '#e74c3c'; // красный
+        }
+
+        // Проверяем, залогинен ли пользователь
+        const userName = sessionStorage.getItem('userName');
+        const userResults = sessionStorage.getItem('userResults');
+        
+        if (!userName || !userResults) {
+            window.location.href = 'index.html';
+        }
+        
+        // Показываем имя
+        document.getElementById('student-name').textContent = userName;
+        
+        // Показываем результаты
+        const results = JSON.parse(userResults);
+        const resultsDiv = document.getElementById('results');
+        const averageDiv = document.getElementById('average');
+        
+        if (Object.keys(results).length === 0) {
+            resultsDiv.innerHTML = '<p class="no-results">Пока нет результатов 😢</p>';
+            averageDiv.style.display = 'none';
+        } else {
+            // Считаем средний балл
+            let total = 0;
+            let count = 0;
+            let html = '<div class="results-grid">';
+            
+            for (let lesson in results) {
+                const percent = results[lesson].value;
+                total += percent;
+                count++;
+                
+                const color = getColorForPercentage(percent);
+                
+                html += `
+                    <div class="result-card" style="border-left-color: ${color}">
+                        <div class="lesson-name">${lesson}</div>
+                        <div class="lesson-grade" style="color: ${color}">
+                            <span class="percent-number">${percent}%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percent}%; background-color: ${color}"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+            
+            // Показываем средний балл
+            const average = (total / count).toFixed(1);
+            const avgColor = getColorForPercentage(average);
+            
+            averageDiv.innerHTML = `
+                <div class="average-content" style="border-bottom: 3px solid ${avgColor}">
+                    <span class="average-label">Средний результат:</span>
+                    <span class="average-value" style="color: ${avgColor}">${average}%</span>
+                </div>
+            `;
+        }
+        
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
