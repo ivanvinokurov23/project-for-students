@@ -14,29 +14,59 @@
                 <button onclick="logout()" class="logout-btn">Выйти</button>
             </div>
             
-            <h2>Твои результаты:</h2>
+            <!-- Динамический заголовок в зависимости от типа -->
+            <div id="welcome-message" class="welcome-message"></div>
             
-            <!-- Добавляем средний балл -->
-            <div id="average" class="average-card">
-                <!-- Сюда подставится средний процент -->
+            <!-- Блок для обычных ДЗ -->
+            <div id="homework-section" class="section" style="display: none;">
+                <h2>📚 Домашние работы</h2>
+                <div id="homework-results" class="results-grid"></div>
             </div>
             
-            <div id="results" class="results">
-                <!-- Сюда подставятся результаты -->
+            <!-- Блок для пробников -->
+            <div id="exam-section" class="section" style="display: none;">
+                <h2>🎯 Пробники</h2>
+                <div id="exam-results" class="results-grid"></div>
             </div>
+            
+            <!-- Общий средний балл -->
+            <div id="average" class="average-card"></div>
         </div>
     </div>
 
     <script>
+        const icons = {
+                exam: '🎯',
+                homework: '📚',
+                test: '📝',
+                lab: '🔬'
+            };
         function getColorForPercentage(percent) {
-            if (percent >= 80) return '#2ecc71'; // зеленый
-            if (percent >= 60) return '#f39c12'; // оранжевый
-            return '#e74c3c'; // красный
+            if (percent >= 80) return '#2ecc71';
+            if (percent >= 60) return '#f39c12';
+            return '#e74c3c';
         }
 
-        // Проверяем, залогинен ли пользователь
+        function getEmojiForType(type) {
+            switch(type) {
+                case 'exam': return '📝';
+                case 'homework': return '📚';
+                default: return '📊';
+            }
+        }
+
+        function getTitleForType(type) {
+            switch(type) {
+                case 'exam': return 'Пробник';
+                case 'homework': return 'Домашняя работа';
+                default: return 'Работа';
+            }
+        }
+
+        // Проверяем вход
         const userName = sessionStorage.getItem('userName');
         const userResults = sessionStorage.getItem('userResults');
+        const userType = sessionStorage.getItem('userType');
         
         if (!userName || !userResults) {
             window.location.href = 'index.html';
@@ -45,50 +75,87 @@
         // Показываем имя
         document.getElementById('student-name').textContent = userName;
         
-        // Показываем результаты
-        const results = JSON.parse(userResults);
-        const resultsDiv = document.getElementById('results');
-        const averageDiv = document.getElementById('average');
-        
-        if (Object.keys(results).length === 0) {
-            resultsDiv.innerHTML = '<p class="no-results">Пока нет результатов 😢</p>';
-            averageDiv.style.display = 'none';
+        // Персонализированное приветствие
+        const welcomeDiv = document.getElementById('welcome-message');
+        if (userType === 'exam_only') {
+            welcomeDiv.innerHTML = '👋 Готовься к экзаменам! Вот твои пробники:';
+        } else if (userType === 'advanced') {
+            welcomeDiv.innerHTML = '🌟 Продвинутый уровень! И ДЗ, и пробники:';
         } else {
-            // Считаем средний балл
-            let total = 0;
-            let count = 0;
-            let html = '<div class="results-grid">';
+            welcomeDiv.innerHTML = '📖 Домашние задания и успеваемость:';
+        }
+        
+        // Парсим результаты
+        const results = JSON.parse(userResults);
+        
+        // Разделяем по типам
+        const homeworkResults = [];
+        const examResults = [];
+        
+        for (let lesson in results) {
+            const item = results[lesson];
+            if (item.type === 'exam') {
+                examResults.push({ name: lesson, ...item });
+            } else {
+                homeworkResults.push({ name: lesson, ...item });
+            }
+        }
+        
+        // Показываем секции в зависимости от того, что есть
+        if (homeworkResults.length > 0) {
+            document.getElementById('homework-section').style.display = 'block';
+            const homeworkDiv = document.getElementById('homework-results');
+            let homeworkHtml = '';
             
-            for (let lesson in results) {
-                const percent = results[lesson].value;
-                total += percent;
-                count++;
-                
-                const color = getColorForPercentage(percent);
-                
-                html += `
+            homeworkResults.forEach(item => {
+                const color = getColorForPercentage(item.value);
+                homeworkHtml += `
                     <div class="result-card" style="border-left-color: ${color}">
-                        <div class="lesson-name">${lesson}</div>
+                        <div class="lesson-name">${item.name}</div>
                         <div class="lesson-grade" style="color: ${color}">
-                            <span class="percent-number">${percent}%</span>
+                            <span class="percent-number">${item.value}%</span>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${percent}%; background-color: ${color}"></div>
+                                <div class="progress-fill" style="width: ${item.value}%; background-color: ${color}"></div>
                             </div>
                         </div>
                     </div>
                 `;
-            }
+            });
+            homeworkDiv.innerHTML = homeworkHtml;
+        }
+        
+        if (examResults.length > 0) {
+            document.getElementById('exam-section').style.display = 'block';
+            const examDiv = document.getElementById('exam-results');
+            let examHtml = '';
             
-            html += '</div>';
-            resultsDiv.innerHTML = html;
-            
-            // Показываем средний балл
-            const average = (total / count).toFixed(1);
+            examResults.forEach(item => {
+                const color = getColorForPercentage(item.value);
+                examHtml += `
+                    <div class="result-card exam-card" style="border-left-color: ${color}">
+                        <div class="lesson-name">${item.name}</div>
+                        <div class="lesson-grade" style="color: ${color}">
+                            <span class="percent-number">${item.value}%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${item.value}%; background-color: ${color}"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            examDiv.innerHTML = examHtml;
+        }
+        
+        // Считаем общий средний балл
+        const allResults = [...homeworkResults, ...examResults];
+        if (allResults.length > 0) {
+            const total = allResults.reduce((sum, item) => sum + item.value, 0);
+            const average = (total / allResults.length).toFixed(1);
             const avgColor = getColorForPercentage(average);
             
-            averageDiv.innerHTML = `
+            document.getElementById('average').innerHTML = `
                 <div class="average-content" style="border-bottom: 3px solid ${avgColor}">
-                    <span class="average-label">Средний результат:</span>
+                    <span class="average-label">Общий средний результат:</span>
                     <span class="average-value" style="color: ${avgColor}">${average}%</span>
                 </div>
             `;
